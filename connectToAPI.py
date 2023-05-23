@@ -20,7 +20,11 @@ def send_get_request(url, headers=None):
     
     # Nhận và trả về phản hồi từ máy chủ
     header, content = receive_response(client_socket)
-    
+
+    substring = b',{"id":1958,'
+    content = content.split(substring)[0]
+    content += b']}}'
+
     client_socket.close()
     return header, content
 
@@ -66,10 +70,38 @@ def get_status_code(header):
     status_code = int(status_line.split(' ')[1])
     return status_code
 
-def response_to_json(content):
-    # Chuyển đổi sang JSON
-    json_data = json.loads(content)
-    return json_data
+def response_to_json(data):
+    data = data.decode('utf8')
+    data_start = data.find('"data":[') + 8
+    data_section = data[data_start:-5]
+
+    values = []
+    start_index = 0
+    while True:
+        id_start = data_section.find('"id":', start_index)
+        if id_start == -1:
+            break
+
+        id_end = data_section.find(',', id_start)
+        id_value = data_section[id_start + 5:id_end]
+
+        name_start = data_section.find('"name":', id_end)
+        name_end = data_section.find(',', name_start)
+        name_value = data_section[name_start + 8:name_end]
+
+        symbol_start = data_section.find('"symbol":', name_end)
+        symbol_end = data_section.find(',', symbol_start)
+        symbol_value = data_section[symbol_start + 10:symbol_end]
+
+        price_start = data_section.find('"price":', symbol_end)
+        price_end = data_section.find(',', price_start)
+        price_value = data_section[price_start + 8:price_end]
+
+        values.append({"id": id_value, "name": name_value, "symbol": symbol_value, "price": price_value})
+
+        start_index = price_end
+
+    return values
 
 # Sử dụng hàm send_get_request() với headers
 url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
@@ -82,3 +114,4 @@ print(f"Status code: {status_code}")
 
 json_data = response_to_json(content)
 print(json_data)
+
