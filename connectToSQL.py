@@ -1,28 +1,20 @@
 import sqlite3
 import json
 
-# Kết nối tới cơ sở dữ liệu SQLite
-conn = sqlite3.connect('coin.sql')
+
+with open('coin.json', 'r') as file:
+    data = json.load(file)
+
+conn = sqlite3.connect('coin.db')
 cursor = conn.cursor()
-
-# Lấy dữ liệu từ bảng coin
-cursor.execute("SELECT * FROM coin")
-rows = cursor.fetchall()
-
-# Chuyển đổi dữ liệu từ tuple sang danh sách đối tượng JSON
-data = []
-for row in rows:
-    coin_id, coin_name, coin_symbol, coin_price = row
-    coin = {
-        'coin_id': coin_id,
-        'coin_name': coin_name,
-        'coin_symbol': coin_symbol,
-        'coin_price': coin_price
-    }
-    data.append(coin)
-
-# Chuyển đổi danh sách dữ liệu thành chuỗi JSON
-json_data = json.dumps(data)
-
-print(json_data)
+cursor.execute(
+        'CREATE TABLE IF NOT EXISTS coin (coin_id INTEGER PRIMARY KEY, coin_name TEXT, coin_symbol TEXT, coin_price REAL)')
+for coin in data:
+    if coin['name'] in ['Bitcoin', 'Ethereum', 'Binance Coin', 'Cardano', 'XRP', 'Dogecoin', 'Polkadot', 'Solana', 'USD Coin', 'Terra']:
+        coin_id = coin['id']
+        coin_name = coin['name']
+        coin_symbol = coin['symbol']
+        coin_price = coin['price']
+        cursor.execute('UPDATE coin SET coin_price = ? WHERE coin_symbol = ?', (coin_price, coin_symbol))
+conn.commit()
 conn.close()
