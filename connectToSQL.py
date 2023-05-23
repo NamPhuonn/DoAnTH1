@@ -24,8 +24,5 @@ for row in rows:
 # Chuyển đổi danh sách dữ liệu thành chuỗi JSON
 json_data = json.dumps(data)
 
-# In dữ liệu
 print(json_data)
-
-# Đóng kết nối tới cơ sở dữ liệu SQLite
 conn.close()
