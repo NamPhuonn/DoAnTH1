@@ -14,7 +14,7 @@ def display_menu():
     print('1. Tra cứu danh sách các đồng tiền và giá qui đổi của đồng tiền tương ứng.')
     print('2. Tra cứu 1 đồng tiền và giá qui đổi của đồng tiền đó.')
     print('3. Hủy kết nối.')
-    choice = input('Vui lòng chọn tính năng (1 hoặc 2): ')
+    choice = input('Vui lòng chọn tính năng (1,2 hoặc 3): ')
 
     if choice == '1':
         request = {'status': 'OK', 'data': 'MARKET ALL'}
@@ -61,5 +61,6 @@ if __name__ == '__main__':
             result = send_request(client_socket, request)
             display_result(result)
         elif request['status'] == 'CLOSE':
+            print('Đóng kết nối')
             break
     client_socket.close()

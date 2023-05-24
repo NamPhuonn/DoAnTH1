@@ -3,7 +3,7 @@ import sqlite3
 import json
 import ast
 import requests
-
+import threading
 
 def get_coin_data():
 
@@ -61,21 +61,28 @@ def get_coin_price(coin_symbol):
     return float(result[0])
 
 
-def handle_request(client_socket, request):
-    # Xử lý yêu cầu từ client
-    print('Client: ' + request)
-    if request == 'MARKET ALL':
-        response_data = get_all_coins()
-    elif 'MARKET' in request:
-        coin_symbol = request.split()[1]
-        response_data = get_coin_price(coin_symbol)
-    else:
-        response_data = 'Invalid request'
+def handle_client(client_socket):
+    # Xử lý yêu cầu từ một client
+    while True:
+        # Nhận yêu cầu từ client
+        request_str = client_socket.recv(4096).decode()
+        if not request_str:
+            break
+        request = json.loads(request_str)['data']
+        print('Client: ' + request)
+        # Xử lý yêu cầu
+        if request == 'MARKET ALL':
+            response_data = get_all_coins()
+        elif 'MARKET' in request:
+            coin_symbol = request.split()[1]
+            response_data = get_coin_price(coin_symbol)
+        else:
+            response_data = 'Invalid request'
 
-    # Gửi kết quả trả về cho client
-    response = {'status': 'OK', 'data': response_data}
-    response_str = json.dumps(response)
-    client_socket.send(response_str.encode())
+        # Gửi kết quả trả về cho client
+        response = {'status': 'OK', 'data': response_data}
+        response_str = json.dumps(response)
+        client_socket.send(response_str.encode())
 
 
 if __name__ == '__main__':
@@ -102,8 +109,7 @@ if __name__ == '__main__':
         client_socket, address = server_socket.accept()
         print('Client is connected from', address)
 
-        # Nhận yêu cầu từ client và xử lý yêu cầu
-        request_str = client_socket.recv(4096).decode()
-        request = json.loads(request_str)['data']
-        handle_request(client_socket, request)
+        # Tạo một luồng mới để xử lý yêu cầu từ client
+        client_thread = threading.Thread(target=handle_client, args=(client_socket,))
+        client_thread.start()
 
