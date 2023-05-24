@@ -103,15 +103,5 @@ def response_to_json(data):
 
     return values
 
-# Sử dụng hàm send_get_request() với headers
-url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-headers = {'Accepts': 'application/json',
-           'X-CMC_PRO_API_KEY': '83a2a200-4303-4bf8-b9e1-801b84ac7c31'}
-header, content = send_get_request(url, headers)
 
-status_code = get_status_code(header.decode())
-print(f"Status code: {status_code}")
-
-json_data = response_to_json(content)
-print(json_data)
 
