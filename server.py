@@ -1,8 +1,7 @@
 import socket
 import sqlite3
 import json
-import ast
-import requests
+from connectToAPI import *
 import threading
 
 def get_coin_data():
@@ -10,14 +9,15 @@ def get_coin_data():
     url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
     headers = {'Accepts': 'application/json',
                'X-CMC_PRO_API_KEY': '83a2a200-4303-4bf8-b9e1-801b84ac7c31'}
-    response = requests.get(url, headers=headers)
+    header, content = send_get_request(url, headers=headers)
 
+    status_code = get_status_code(header.decode())
     # Kiểm tra dữ liệu trả về
-    if response.status_code != 200:
-        print('Error:', response.status_code)
+    if status_code != 200:
+        print('Error:', status_code)
     else:
         try:
-            data = response.json()['data']
+            data = response_to_json(content)
             conn = sqlite3.connect('coin.db')
             cursor = conn.cursor()
             for coin in data:
@@ -25,7 +25,7 @@ def get_coin_data():
                     coin_id = coin['id']
                     coin_name = coin['name']
                     coin_symbol = coin['symbol']
-                    coin_price = coin['quote']['USD']['price']
+                    coin_price = coin['price']
                     # Chèn hoặc cập nhật dữ liệu
                     cursor.execute('INSERT OR REPLACE INTO coin (coin_id, coin_name, coin_symbol, coin_price) VALUES (?, ?, ?, ?)', (coin_id, coin_name, coin_symbol, coin_price))
             conn.commit()

@@ -1,5 +1,4 @@
 import socket
-import json
 import ssl
 
 def send_get_request(url, headers=None):
@@ -87,15 +86,15 @@ def response_to_json(data):
 
         name_start = data_section.find('"name":', id_end)
         name_end = data_section.find(',', name_start)
-        name_value = data_section[name_start + 8:name_end]
+        name_value = data_section[name_start + 8:name_end - 1]
 
         symbol_start = data_section.find('"symbol":', name_end)
         symbol_end = data_section.find(',', symbol_start)
-        symbol_value = data_section[symbol_start + 10:symbol_end]
+        symbol_value = data_section[symbol_start + 10:symbol_end - 1]
 
         price_start = data_section.find('"price":', symbol_end)
         price_end = data_section.find(',', price_start)
-        price_value = data_section[price_start + 8:price_end]
+        price_value = data_section[price_start + 8:price_end - 1]
 
         values.append({"id": id_value, "name": name_value, "symbol": symbol_value, "price": price_value})
 
