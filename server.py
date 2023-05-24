@@ -21,12 +21,13 @@ def get_coin_data():
             conn = sqlite3.connect('coin.db')
             cursor = conn.cursor()
             for coin in data:
-                if coin['name'] in ['Bitcoin', 'Ethereum', 'Binance Coin', 'Cardano', 'XRP', 'Dogecoin', 'Polkadot', 'Solana', 'USD Coin', 'Terra']:
+                if coin['name'] in ['Bitcoin', 'Ethereum', 'Tether', 'BNB', 'USD Coin', 'XRP', 'Cardano', 'Dogecoin', 'Polygon', 'Solana']:
                     coin_id = coin['id']
                     coin_name = coin['name']
                     coin_symbol = coin['symbol']
                     coin_price = coin['quote']['USD']['price']
-                    cursor.execute('UPDATE coin SET coin_price = ? WHERE coin_symbol = ?', (coin_price, coin_symbol))
+                    # Chèn hoặc cập nhật dữ liệu
+                    cursor.execute('INSERT OR REPLACE INTO coin (coin_id, coin_name, coin_symbol, coin_price) VALUES (?, ?, ?, ?)', (coin_id, coin_name, coin_symbol, coin_price))
             conn.commit()
             conn.close()
         except KeyError as e:
@@ -57,11 +58,12 @@ def get_coin_price(coin_symbol):
 
     conn.close()
 
-    return result[0]
+    return float(result[0])
 
 
 def handle_request(client_socket, request):
     # Xử lý yêu cầu từ client
+    print('Client: ' + request)
     if request == 'MARKET ALL':
         response_data = get_all_coins()
     elif 'MARKET' in request:
@@ -102,7 +104,6 @@ if __name__ == '__main__':
 
         # Nhận yêu cầu từ client và xử lý yêu cầu
         request_str = client_socket.recv(4096).decode()
-        request = ast.literal_eval(request_str)['data']
+        request = json.loads(request_str)['data']
         handle_request(client_socket, request)
 
-        client_socket.close()
